@@ -1,0 +1,723 @@
+openapi: 3.0.0
+info:
+  title: Universal CRM REST API
+  description: RESTful API for Account, Contact, and Case CRUD operations in Salesforce
+  version: 1.0.0
+servers:
+  - url: '{instanceUrl}/services/apexrest'
+    variables:
+      instanceUrl:
+        default: https://yourinstance.salesforce.com
+paths:
+  /accounts:
+    get:
+      summary: List accounts
+      description: Retrieve a list of accounts with optional filtering and search
+      operationId: listAccounts
+      parameters:
+        - name: search
+          in: query
+          description: Text to search for in account fields (Name, BillingCity, etc.)
+          required: false
+          schema:
+            type: string
+        - name: industry
+          in: query
+          description: Filter by Industry field
+          required: false
+          schema:
+            type: string
+        - name: billingCity
+          in: query
+          description: Filter by Billing City
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: "Maximum number of records to return (default: 5, max: 20)"
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 5
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create account(s)
+      description: Create a new account or multiple accounts (bulk)
+      operationId: createAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/AccountInput'
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/AccountInput'
+            examples:
+              single:
+                value:
+                  Name: Acme Corporation
+                  Industry: Technology
+                  BillingCity: San Francisco
+              bulk:
+                value:
+                  - Name: Acme Corporation
+                    Industry: Technology
+                  - Name: Globex Inc
+                    Industry: Finance
+      responses:
+        '200':
+          description: Account(s) created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /accounts/{id}:
+    get:
+      summary: Get account by ID
+      description: Retrieve a single account by its Salesforce ID
+      operationId: getAccountById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Salesforce Account ID (18-character)
+          schema:
+            type: string
+            pattern: '^[a-zA-Z0-9]{15,18}$'
+      responses:
+        '200':
+          description: Account found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '404':
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Update account
+      description: Update an existing account. If no body provided, returns current record data.
+      operationId: updateAccount
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Salesforce Account ID (18-character)
+          schema:
+            type: string
+            pattern: '^[a-zA-Z0-9]{15,18}$'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountInput'
+            example:
+              Industry: Technology
+              BillingCity: San Francisco
+              Phone: "(555) 123-4567"
+      responses:
+        '200':
+          description: Account updated successfully or current record returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete account
+      description: Delete an account by its Salesforce ID
+      operationId: deleteAccount
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Salesforce Account ID (18-character)
+          schema:
+            type: string
+            pattern: '^[a-zA-Z0-9]{15,18}$'
+      responses:
+        '200':
+          description: Account deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '404':
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /contacts:
+    get:
+      summary: List contacts
+      description: Retrieve a list of contacts with optional filtering and search
+      operationId: listContacts
+      parameters:
+        - name: search
+          in: query
+          description: Text to search for in contact fields (FirstName, LastName, Email, etc.)
+          required: false
+          schema:
+            type: string
+        - name: email
+          in: query
+          description: Filter by Email field
+          required: false
+          schema:
+            type: string
+        - name: accountId
+          in: query
+          description: Filter by Account ID
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: "Maximum number of records to return (default: 5, max: 20)"
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 5
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create contact(s)
+      description: Create a new contact or multiple contacts (bulk). Supports 'accountName' field to resolve Account by name.
+      operationId: createContact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/ContactInput'
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/ContactInput'
+            examples:
+              single:
+                value:
+                  LastName: Smith
+                  FirstName: John
+                  Email: john.smith@example.com
+                  Phone: "(555) 123-4567"
+                  accountName: Acme Corporation
+      responses:
+        '200':
+          description: Contact(s) created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          description: Bad request. If Account not found, error will include required fields to create it.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /contacts/{id}:
+    get:
+      summary: Get contact by ID
+      description: Retrieve a single contact by its Salesforce ID
+      operationId: getContactById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Salesforce Contact ID (18-character)
+          schema:
+            type: string
+            pattern: '^[a-zA-Z0-9]{15,18}$'
+      responses:
+        '200':
+          description: Contact found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Update contact
+      description: Update an existing contact. If no body provided, returns current record data.
+      operationId: updateContact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Salesforce Contact ID (18-character)
+          schema:
+            type: string
+            pattern: '^[a-zA-Z0-9]{15,18}$'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactInput'
+            example:
+              Email: newemail@example.com
+              Phone: "(555) 987-6543"
+              accountName: New Account Name
+      responses:
+        '200':
+          description: Contact updated successfully or current record returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete contact
+      description: Delete a contact by its Salesforce ID
+      operationId: deleteContact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Salesforce Contact ID (18-character)
+          schema:
+            type: string
+            pattern: '^[a-zA-Z0-9]{15,18}$'
+      responses:
+        '200':
+          description: Contact deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /cases:
+    get:
+      summary: List cases
+      description: Retrieve a list of cases with optional filtering and search
+      operationId: listCases
+      parameters:
+        - name: search
+          in: query
+          description: Text to search for in case fields (Subject, Description, CaseNumber, etc.)
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Filter by Status field
+          required: false
+          schema:
+            type: string
+        - name: priority
+          in: query
+          description: Filter by Priority field
+          required: false
+          schema:
+            type: string
+        - name: accountId
+          in: query
+          description: Filter by Account ID
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: "Maximum number of records to return (default: 5, max: 20)"
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 5
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create case(s)
+      description: Create a new case or multiple cases (bulk). Supports 'accountName' and 'contactNameOrEmail' fields to resolve related records by name.
+      operationId: createCase
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/CaseInput'
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/CaseInput'
+            examples:
+              single:
+                value:
+                  Subject: Support Request
+                  Description: Need help with product setup
+                  Status: New
+                  Priority: Medium
+                  accountName: Acme Corporation
+                  contactNameOrEmail: john@example.com
+      responses:
+        '200':
+          description: Case(s) created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          description: Bad request. If Account or Contact not found, error will include required fields to create them.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /cases/{id}:
+    get:
+      summary: Get case by ID
+      description: Retrieve a single case by its Salesforce ID
+      operationId: getCaseById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Salesforce Case ID (18-character)
+          schema:
+            type: string
+            pattern: '^[a-zA-Z0-9]{15,18}$'
+      responses:
+        '200':
+          description: Case found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '404':
+          description: Case not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Update case
+      description: Update an existing case. If no body provided, returns current record data.
+      operationId: updateCase
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Salesforce Case ID (18-character)
+          schema:
+            type: string
+            pattern: '^[a-zA-Z0-9]{15,18}$'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseInput'
+            example:
+              Status: Closed
+              Priority: High
+              accountName: New Account Name
+      responses:
+        '200':
+          description: Case updated successfully or current record returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Case not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete case
+      description: Delete a case by its Salesforce ID
+      operationId: deleteCase
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Salesforce Case ID (18-character)
+          schema:
+            type: string
+            pattern: '^[a-zA-Z0-9]{15,18}$'
+      responses:
+        '200':
+          description: Case deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '404':
+          description: Case not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    AccountInput:
+      type: object
+      properties:
+        Name:
+          type: string
+          description: Account name (required)
+        Industry:
+          type: string
+          description: Industry
+        BillingCity:
+          type: string
+          description: Billing city
+        BillingState:
+          type: string
+          description: Billing state
+        BillingStreet:
+          type: string
+          description: Billing street address
+        BillingPostalCode:
+          type: string
+          description: Billing postal code
+        Phone:
+          type: string
+          description: Phone number
+        Website:
+          type: string
+          description: Website URL
+      required:
+        - Name
+    ContactInput:
+      type: object
+      properties:
+        LastName:
+          type: string
+          description: Contact last name (required)
+        FirstName:
+          type: string
+          description: Contact first name
+        Email:
+          type: string
+          format: email
+          description: Email address
+        Phone:
+          type: string
+          description: Phone number
+        Title:
+          type: string
+          description: Job title
+        accountName:
+          type: string
+          description: Account name to resolve to AccountId (if Account doesn't exist, error will include fields needed to create it)
+      required:
+        - LastName
+    CaseInput:
+      type: object
+      properties:
+        Subject:
+          type: string
+          description: Case subject (required)
+        Description:
+          type: string
+          description: Case description
+        Status:
+          type: string
+          description: Case status (e.g., New, Working, Closed)
+          enum:
+            - New
+            - Working
+            - Escalated
+            - Closed
+        Priority:
+          type: string
+          description: Case priority (e.g., Low, Medium, High)
+          enum:
+            - Low
+            - Medium
+            - High
+        Type:
+          type: string
+          description: Case type
+        Origin:
+          type: string
+          description: Case origin (e.g., Web, Email, Phone)
+          enum:
+            - Web
+            - Email
+            - Phone
+            - Other
+        accountName:
+          type: string
+          description: Account name to resolve to AccountId (if Account doesn't exist, error will include fields needed to create it)
+        contactNameOrEmail:
+          type: string
+          description: Contact name or email to resolve to ContactId (if Contact doesn't exist, error will include fields needed to create it)
+      required:
+        - Subject
+    StandardResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Whether the operation succeeded
+        data:
+          description: Response data (single record, array of records, or metadata)
+        message:
+          type: string
+          description: Human-readable message about the operation result
+        error:
+          type: string
+          description: Error message if operation failed
+        metadata:
+          type: object
+          description: Additional metadata (e.g., totalMatches, ambiguous flag)
+          properties:
+            ambiguous:
+              type: boolean
+              description: True if multiple matches found (agent should ask for clarification)
+            totalMatches:
+              type: integer
+              description: Number of records found
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          description: Error message
+        message:
+          type: string
+          description: Human-readable error message with guidance
+        data:
+          type: object
+          description: Additional error data (e.g., missingParent, requiredFields, optionalFields)
+          properties:
+            missingParent:
+              type: string
+              description: Type of parent record that was not found
+            parentName:
+              type: string
+              description: Name of the missing parent record
+            requiredFields:
+              type: array
+              items:
+                type: string
+              description: Required fields to create the missing parent
+            optionalFields:
+              type: array
+              items:
+                type: string
+              description: Optional fields for creating the missing parent
+x-sfdc:
+  topics:
+    - name: Account Management
+      description: Operations for managing Account records in Salesforce
+      instructions: Use this API when the user wants to find, create, update, or delete accounts. When multiple accounts match a search, ask the user for additional details like city or industry to narrow down the selection.
+    - name: Contact Management
+      description: Operations for managing Contact records in Salesforce
+      instructions: Use this API when the user wants to find, create, update, or delete contacts. When creating a contact with an accountName, if the Account doesn't exist, ask the user the questions required to create that Account (Name is required, Industry and BillingCity are optional). When multiple contacts match a search, ask for additional details like email or account name to narrow down.
+    - name: Case Management
+      description: Operations for managing Case records in Salesforce
+      instructions: Use this API when the user wants to find, create, update, or delete cases. When creating a case with accountName or contactNameOrEmail, if those records don't exist, ask the user the questions required to create them. When multiple cases match a search, ask for additional details like status or account name to narrow down.
+  agentInstructions:
+    accounts:
+      get: "When retrieving accounts, if multiple matches are found, present all options and ask the user to provide more details (like city or industry) to narrow down the selection."
+      post: "When creating an account, ensure the Name field is provided. If the user doesn't specify other fields, you can ask for optional information like Industry or Billing City."
+      put: "When updating an account, if the user doesn't specify what to update, return the current account data and ask which fields they want to change."
+      delete: "Confirm with the user before deleting an account, as this action cannot be undone."
+    contacts:
+      get: "When retrieving contacts, if multiple matches are found, present all options and ask the user to provide more details (like email or account name) to narrow down the selection."
+      post: "When creating a contact, ensure LastName is provided. If accountName is specified but the Account doesn't exist, ask the user the questions needed to create that Account (Name required, Industry and BillingCity optional)."
+      put: "When updating a contact, if the user doesn't specify what to update, return the current contact data and ask which fields they want to change."
+      delete: "Confirm with the user before deleting a contact, as this action cannot be undone."
+    cases:
+      get: "When retrieving cases, if multiple matches are found, present all options and ask the user to provide more details (like status or account name) to narrow down the selection."
+      post: "When creating a case, ensure Subject is provided. If accountName or contactNameOrEmail is specified but those records don't exist, ask the user the questions needed to create them (Account: Name required, Industry and BillingCity optional; Contact: LastName required, Email optional)."
+      put: "When updating a case, if the user doesn't specify what to update, return the current case data and ask which fields they want to change."
+      delete: "Confirm with the user before deleting a case, as this action cannot be undone."
+
