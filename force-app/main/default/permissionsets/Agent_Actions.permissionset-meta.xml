@@ -544,4 +544,9 @@
         <field>Customer_Order_Line_Item__c.Distribution_Center__c</field>
         <readable>true</readable>
     </fieldPermissions>
+    
+    <tabSettings>
+        <tab>Meeting__c</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
 </PermissionSet>
