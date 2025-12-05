@@ -1006,7 +1006,7 @@ public with sharing class AFUniversalCrmRecordAction {
         
         // Resolve Contact for Case
         if (obj == 'case' && !String.isBlank(req.contactNameOrEmail)) {
-            Id contactId = resolveContactByNameOrEmail(req.contactNameOrEmail);
+            Id contactId = resolveContactByNameOrEmail(req.contactNameOrEmail, req.accountName);
             fieldDataMap.put('ContactId', contactId);
         }
         
@@ -1018,13 +1018,13 @@ public with sharing class AFUniversalCrmRecordAction {
         
         // Resolve WhoId (Contact) for Task
         if (obj == 'task' && !String.isBlank(req.contactNameOrEmail)) {
-            Id contactId = resolveContactByNameOrEmail(req.contactNameOrEmail);
+            Id contactId = resolveContactByNameOrEmail(req.contactNameOrEmail, req.accountName);
             fieldDataMap.put('WhoId', contactId);
         }
         
         // Resolve Contact__c for Meeting__c
         if (obj == 'meeting__c' && !String.isBlank(req.contactNameOrEmail)) {
-            Id contactId = resolveContactByNameOrEmail(req.contactNameOrEmail);
+            Id contactId = resolveContactByNameOrEmail(req.contactNameOrEmail, req.accountName);
             fieldDataMap.put('Contact__c', contactId);
         }
         
@@ -1058,8 +1058,14 @@ public with sharing class AFUniversalCrmRecordAction {
             String contactNameOrEmail = String.valueOf(fieldDataMap.get('_contactNameOrEmail'));
             fieldDataMap.remove('_contactNameOrEmail');
             
+            // Check if accountName is also provided for scoping
+            String accountNameForScope = null;
+            if (fieldDataMap.containsKey('_accountName')) {
+                accountNameForScope = String.valueOf(fieldDataMap.get('_accountName'));
+            }
+            
             if (!String.isBlank(contactNameOrEmail)) {
-                Id contactId = resolveContactByNameOrEmail(contactNameOrEmail);
+                Id contactId = resolveContactByNameOrEmail(contactNameOrEmail, accountNameForScope);
                 fieldDataMap.put('ContactId', contactId);
             }
         }
@@ -1080,8 +1086,14 @@ public with sharing class AFUniversalCrmRecordAction {
             String contactNameOrEmail = String.valueOf(fieldDataMap.get('_contactNameOrEmail'));
             fieldDataMap.remove('_contactNameOrEmail');
             
+            // Check if accountName is also provided for scoping (WhatId)
+            String accountNameForScope = null;
+            if (fieldDataMap.containsKey('_accountName')) {
+                accountNameForScope = String.valueOf(fieldDataMap.get('_accountName'));
+            }
+            
             if (!String.isBlank(contactNameOrEmail)) {
-                Id contactId = resolveContactByNameOrEmail(contactNameOrEmail);
+                Id contactId = resolveContactByNameOrEmail(contactNameOrEmail, accountNameForScope);
                 fieldDataMap.put('WhoId', contactId);
             }
         }
@@ -1091,8 +1103,14 @@ public with sharing class AFUniversalCrmRecordAction {
             String contactNameOrEmail = String.valueOf(fieldDataMap.get('_contactNameOrEmail'));
             fieldDataMap.remove('_contactNameOrEmail');
             
+            // Check if accountName is also provided for scoping (Account__c)
+            String accountNameForScope = null;
+            if (fieldDataMap.containsKey('_accountName')) {
+                accountNameForScope = String.valueOf(fieldDataMap.get('_accountName'));
+            }
+            
             if (!String.isBlank(contactNameOrEmail)) {
-                Id contactId = resolveContactByNameOrEmail(contactNameOrEmail);
+                Id contactId = resolveContactByNameOrEmail(contactNameOrEmail, accountNameForScope);
                 fieldDataMap.put('Contact__c', contactId);
             }
         }
@@ -1173,6 +1191,130 @@ public with sharing class AFUniversalCrmRecordAction {
         }
         
         return accounts[0].Id;
+    }
+    
+    /**
+     * Resolve Contact by name or email with optional Account scope
+     * Overloaded version that accepts account name to narrow down contact search
+     */
+    private static Id resolveContactByNameOrEmail(String nameOrEmail, String accountName) {
+        // Check if input is already a Salesforce ID (15 or 18 characters starting with 003)
+        if (nameOrEmail != null && (nameOrEmail.length() == 15 || nameOrEmail.length() == 18)) {
+            try {
+                Id contactId = Id.valueOf(nameOrEmail);
+                if (String.valueOf(contactId).startsWith('003')) {
+                    List<Contact> existingContact = [
+                        SELECT Id FROM Contact WHERE Id = :contactId LIMIT 1
+                    ];
+                    if (!existingContact.isEmpty()) {
+                        System.debug(LoggingLevel.INFO, 'AFUniversalCrmRecordAction: Input was already a valid Contact ID: ' + contactId);
+                        return contactId;
+                    }
+                }
+            } catch (Exception e) {
+                System.debug(LoggingLevel.DEBUG, 'AFUniversalCrmRecordAction: Input not a valid Contact ID: ' + nameOrEmail);
+            }
+        }
+        
+        String searchTerm = String.escapeSingleQuotes(nameOrEmail);
+        String accountSearchTerm = !String.isBlank(accountName) ? String.escapeSingleQuotes(accountName) : null;
+        
+        // Try email first (more specific)
+        List<Contact> contacts;
+        if (!String.isBlank(accountSearchTerm)) {
+            // Search with account filter
+            String accountLikePattern = '%' + accountSearchTerm + '%';
+            contacts = [
+                SELECT Id, Name, Email, Phone, Account.Name, Title, Department
+                FROM Contact 
+                WHERE Email = :nameOrEmail 
+                  AND Account.Name LIKE :accountLikePattern
+                ORDER BY LastModifiedDate DESC 
+                LIMIT 2
+            ];
+        } else {
+            contacts = [
+                SELECT Id, Name, Email, Phone, Account.Name, Title, Department
+                FROM Contact 
+                WHERE Email = :nameOrEmail 
+                ORDER BY LastModifiedDate DESC 
+                LIMIT 2
+            ];
+        }
+        
+        if (!contacts.isEmpty()) {
+            if (contacts.size() > 1) {
+                List<Map<String, Object>> candidates = new List<Map<String, Object>>();
+                for (Contact con : contacts) {
+                    Map<String, Object> candidate = new Map<String, Object>();
+                    candidate.put('Id', con.Id);
+                    candidate.put('Name', con.Name);
+                    candidate.put('Email', con.Email);
+                    candidate.put('Phone', con.Phone);
+                    candidate.put('AccountName', con.Account != null ? con.Account.Name : null);
+                    candidate.put('Title', con.Title);
+                    candidate.put('Department', con.Department);
+                    candidates.add(candidate);
+                }
+                throw new AmbiguousRelationshipException('Contact', nameOrEmail, candidates);
+            }
+            return contacts[0].Id;
+        }
+        
+        // Try name match with optional account filter
+        String likePattern = '%' + searchTerm + '%';
+        if (!String.isBlank(accountSearchTerm)) {
+            // Search with account filter
+            String accountLikePattern = '%' + accountSearchTerm + '%';
+            contacts = [
+                SELECT Id, Name, Email, Phone, Account.Name, Title, Department
+                FROM Contact 
+                WHERE (Name LIKE :likePattern
+                   OR FirstName LIKE :likePattern
+                   OR LastName LIKE :likePattern)
+                  AND Account.Name LIKE :accountLikePattern
+                ORDER BY LastModifiedDate DESC 
+                LIMIT 6
+            ];
+        } else {
+            contacts = [
+                SELECT Id, Name, Email, Phone, Account.Name, Title, Department
+                FROM Contact 
+                WHERE Name LIKE :likePattern
+                   OR FirstName LIKE :likePattern
+                   OR LastName LIKE :likePattern
+                ORDER BY LastModifiedDate DESC 
+                LIMIT 6
+            ];
+        }
+        
+        if (contacts.isEmpty()) {
+            Map<String, List<String>> fieldMetadata = getObjectFieldMetadata('Contact');
+            String searchContext = !String.isBlank(accountSearchTerm) ? nameOrEmail + ' (Account: ' + accountName + ')' : nameOrEmail;
+            throw new MissingParentException('Contact', searchContext, fieldMetadata.get('required'), fieldMetadata.get('optional'));
+        }
+        
+        if (contacts.size() > 1) {
+            List<Map<String, Object>> candidates = new List<Map<String, Object>>();
+            Integer candidateCount = Math.min(5, contacts.size());
+            
+            for (Integer i = 0; i < candidateCount; i++) {
+                Contact con = contacts[i];
+                Map<String, Object> candidate = new Map<String, Object>();
+                candidate.put('Id', con.Id);
+                candidate.put('Name', con.Name);
+                candidate.put('Email', con.Email);
+                candidate.put('Phone', con.Phone);
+                candidate.put('AccountName', con.Account != null ? con.Account.Name : null);
+                candidate.put('Title', con.Title);
+                candidate.put('Department', con.Department);
+                candidates.add(candidate);
+            }
+            
+            throw new AmbiguousRelationshipException('Contact', nameOrEmail, candidates);
+        }
+        
+        return contacts[0].Id;
     }
     
     /**
