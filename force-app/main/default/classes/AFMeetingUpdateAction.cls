@@ -13,16 +13,32 @@ public with sharing class AFMeetingUpdateAction {
         )
         public Id recordId;
         
-        @InvocableVariable(label='Field Data JSON')
+        @InvocableVariable(
+            label='Field Data JSON'
+            description='JSON string containing Meeting fields to update. Only include fields you want to change. Example: {"Meeting_Status__c":"Completed","Meeting_Outcome__c":"Productive"}. Can include Subject__c for automatic record resolution if recordId is not provided. For bulk updates: [{"Subject__c":"Meeting 1","Meeting_Outcome__c":"Productive"},{"Subject__c":"Meeting 2","Meeting_Status__c":"Completed"}].'
+            required=false
+        )
         public String fieldDataJson;
         
-        @InvocableVariable(label='Account Name')
+        @InvocableVariable(
+            label='Account Name'
+            description='Account name to resolve to Account__c lookup. Use this to change the meeting\'s account. If multiple matches, system will return candidates for clarification. Example: "Acme Corp".'
+            required=false
+        )
         public String accountName;
         
-        @InvocableVariable(label='Contact Name or Email')
+        @InvocableVariable(
+            label='Contact Name or Email'
+            description='Contact name or email to resolve to Contact__c lookup. Use this to change the meeting\'s contact. Example: "John Smith" or "john@example.com".'
+            required=false
+        )
         public String contactNameOrEmail;
         
-        @InvocableVariable(label='Confirm')
+        @InvocableVariable(
+            label='Confirm'
+            description='Optional: Set to false to preview only without committing changes. Default (true): Updates the record immediately. When user says "update meeting", omit this field or set to true to update immediately. Only set to false if user explicitly asks to preview first.'
+            required=false
+        )
         public Boolean confirm;
     }
     

@@ -8,49 +8,85 @@ public with sharing class AFMeetingFindAction {
     public class Request {
         @InvocableVariable(
             label='Search Term'
-            description='Text to search for in Meeting fields (Subject__c, Description__c, Meeting_Status__c). Example: "Product Review" or "John Smith".'
+            description='Text to search for in Meeting fields (Subject__c, Description__c, Meeting_Status__c). The search will find meetings where any of these fields contain the search term. Example: "Product Review" or "John Smith". Leave blank to search using only filters.'
+            required=false
         )
         public String searchTerm;
         
         @InvocableVariable(
             label='Filters JSON'
-            description='JSON string of exact-match filters. Example: {"fieldApiName":"Meeting_Status__c","value":"Scheduled"}. Common filters: Meeting_Status__c, Meeting_Type__c, Meeting_Date__c, Contact__c, Account__c.'
+            description='JSON string of exact-match filters. Can be single object {"fieldApiName":"Meeting_Status__c","value":"Scheduled"} or array [{"fieldApiName":"Meeting_Status__c","value":"Scheduled"},{"fieldApiName":"Meeting_Type__c","value":"In-Person Visit"}]. Common filter fields: Meeting_Status__c, Meeting_Type__c, Meeting_Date__c, Contact__c, Account__c.'
+            required=false
         )
         public String filtersJson;
         
-        @InvocableVariable(label='Search Limit')
+        @InvocableVariable(
+            label='Search Limit'
+            description='Maximum number of records to return (default: 5, max: 20). If more records match, the response will indicate how many total matches were found. Use this to limit results for initial searches, then prompt user to narrow down if needed.'
+            required=false
+        )
         public Integer searchLimit;
     }
     
     public class Response {
-        @InvocableVariable(label='Success')
+        @InvocableVariable(
+            label='Success'
+            description='True if operation completed successfully, false if an error occurred. Check this before using other output variables.'
+        )
         public Boolean success;
         
-        @InvocableVariable(label='Record')
+        @InvocableVariable(
+            label='Record'
+            description='The single Meeting record found (when exactly one match). Use the record.Id field from this record for follow-up operations like updating or deleting. This is null when multiple or zero records are found.'
+        )
         public Meeting__c record;
         
-        @InvocableVariable(label='Records')
+        @InvocableVariable(
+            label='Records'
+            description='List of Meeting records found. Use record.Id from each record for subsequent operations. If multiple matches, present all options to the user with distinguishing details like Subject, Meeting Date, Status, Account, and Contact.'
+        )
         public List<Meeting__c> records;
         
-        @InvocableVariable(label='Record ID')
+        @InvocableVariable(
+            label='Record ID'
+            description='The Salesforce ID of the record (18-character format). Only populated when exactly one record is found. Use this ID for update, delete, or read operations.'
+        )
         public Id recordId;
         
-        @InvocableVariable(label='Message')
+        @InvocableVariable(
+            label='Message'
+            description='Human-readable message describing the search results. Use this exact message to inform the user. Examples: "Found exactly one matching Meeting", "Found 3 Meeting records", "No Meetings found matching the criteria".'
+        )
         public String message;
         
-        @InvocableVariable(label='Error Message')
+        @InvocableVariable(
+            label='Error Message'
+            description='If success is false, this contains a user-friendly error message to relay directly to the user.'
+        )
         public String errorMessage;
         
-        @InvocableVariable(label='Object Type')
+        @InvocableVariable(
+            label='Object Type'
+            description='The Salesforce object type, always "Meeting__c" for Meeting find operations. Useful for agent context and logging.'
+        )
         public String objectType;
         
-        @InvocableVariable(label='Ambiguous Result')
+        @InvocableVariable(
+            label='Ambiguous Result'
+            description='True if multiple records were found in the search. When true, present all records to the user and ask for clarification using additional identifying fields like Subject, Meeting Date, Status, Account, or Contact to narrow down the selection.'
+        )
         public Boolean ambiguous;
         
-        @InvocableVariable(label='Total Matches')
+        @InvocableVariable(
+            label='Total Matches'
+            description='Number of Meeting records found in the search. Use this to inform the user: "Found X matching meetings" or "No meetings found matching your criteria".'
+        )
         public Integer totalMatches;
         
-        @InvocableVariable(label='More Results Available')
+        @InvocableVariable(
+            label='More Results Available'
+            description='True if the search returned the maximum number of results (searchLimit) but there are more matching records available. When true, suggest the user provide more specific search criteria or filters to narrow down the results.'
+        )
         public Boolean moreResultsAvailable;
     }
     

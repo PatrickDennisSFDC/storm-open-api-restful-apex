@@ -6,36 +6,68 @@
 public with sharing class AFMeetingDeleteAction {
     
     public class Request {
-        @InvocableVariable(label='Record ID' required=true)
+        @InvocableVariable(
+            label='Record ID'
+            description='The Salesforce ID of the Meeting__c to delete (18-character format). Use the record ID from a previous findMeetings or readMeeting operation. Example: "a0Bxx000000ABCDEF".'
+            required=true
+        )
         public Id recordId;
         
-        @InvocableVariable(label='Confirm')
+        @InvocableVariable(
+            label='Confirm'
+            description='Optional: Set to false for safety check (returns meeting details), then set to true to actually delete. Default (false): Returns confirmation message. When user says "delete meeting", first call with confirm=false to show what will be deleted, then call again with confirm=true to proceed.'
+            required=false
+        )
         public Boolean confirm;
     }
     
     public class Response {
-        @InvocableVariable(label='Success')
+        @InvocableVariable(
+            label='Success'
+            description='True if operation completed successfully, false if an error occurred. Check this before using other output variables.'
+        )
         public Boolean success;
         
-        @InvocableVariable(label='Record ID')
+        @InvocableVariable(
+            label='Record ID'
+            description='The Salesforce ID of the Meeting record that was deleted (or will be deleted if confirmation required). Use this to reference the meeting in follow-up messages.'
+        )
         public Id recordId;
         
-        @InvocableVariable(label='Message')
+        @InvocableVariable(
+            label='Message'
+            description='Human-readable message describing the result. Use this exact message to inform the user. Examples: "This will delete Meeting [Subject] (Date: XX). Call again with confirm=true to proceed." or "Meeting deleted successfully".'
+        )
         public String message;
         
-        @InvocableVariable(label='Error Message')
+        @InvocableVariable(
+            label='Error Message'
+            description='If success is false, this contains a user-friendly error message to relay directly to the user.'
+        )
         public String errorMessage;
         
-        @InvocableVariable(label='Object Type')
+        @InvocableVariable(
+            label='Object Type'
+            description='The Salesforce object type, always "Meeting__c" for Meeting delete operations. Useful for agent context and logging.'
+        )
         public String objectType;
         
-        @InvocableVariable(label='Confirmation Required')
+        @InvocableVariable(
+            label='Confirmation Required'
+            description='True if this is a confirmation request (confirm=false was passed). When true, the meeting has NOT been deleted yet. Show the user the message (which includes meeting details), then call again with confirm=true to actually delete.'
+        )
         public Boolean confirmationRequired;
         
-        @InvocableVariable(label='Related Account Name')
+        @InvocableVariable(
+            label='Related Account Name'
+            description='Name of the related Account if the Meeting is linked to an Account. Use this to provide context to the user about what company the meeting is associated with.'
+        )
         public String relatedAccountName;
         
-        @InvocableVariable(label='Related Contact Name')
+        @InvocableVariable(
+            label='Related Contact Name'
+            description='Name of the related Contact if the Meeting is linked to a Contact. Use this to provide context to the user about who the meeting was with.'
+        )
         public String relatedContactName;
     }
     
