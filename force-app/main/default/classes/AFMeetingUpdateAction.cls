@@ -15,7 +15,7 @@ public with sharing class AFMeetingUpdateAction {
         
         @InvocableVariable(
             label='Field Data JSON'
-            description='JSON string containing Meeting fields to update. Only include fields you want to change. Example: {"Meeting_Status__c":"Completed","Meeting_Outcome__c":"Productive"}. Can include Subject__c for automatic record resolution if recordId is not provided. For bulk updates: [{"Subject__c":"Meeting 1","Meeting_Outcome__c":"Productive"},{"Subject__c":"Meeting 2","Meeting_Status__c":"Completed"}].'
+            description='JSON string containing Meeting fields to update. Only include fields you want to change. INTELLIGENT FIELD MAPPING: Use your semantic understanding to map natural language to structured fields. When user provides updates conversationally (e.g., "mark it as completed, it went really well"), infer the appropriate values: Parse status from context (happened→Completed, upcoming→Scheduled, did not happen→Cancelled), infer outcome from sentiment (went well/good→Productive, excellent/great→Very Productive), detect follow-up needs from language, extract structured data from natural descriptions. Query availableFieldsJson to see valid picklist options, then use your best judgment to map. If unclear, leave field blank. Example: {"Meeting_Status__c":"Completed","Meeting_Outcome__c":"Productive","Follow_Up_Required__c":true}. Can include Subject__c for automatic record resolution if recordId is not provided. For bulk updates: [{"Subject__c":"Meeting 1","Meeting_Outcome__c":"Productive"},{"Subject__c":"Meeting 2","Meeting_Status__c":"Completed"}].'
             required=false
         )
         public String fieldDataJson;
@@ -130,7 +130,7 @@ public with sharing class AFMeetingUpdateAction {
     
     @InvocableMethod(
         label='Update Meeting'
-        description='Updates an existing Meeting__c record immediately. Pass Meeting ID OR include Subject__c in fieldDataJson for automatic resolution. Supports bulk updates by Subject.'
+        description='Updates an existing Meeting__c record immediately. Pass Meeting ID OR include Subject__c in fieldDataJson for automatic resolution. AGENT INTELLIGENCE: When the user provides meeting updates in natural language, you should intelligently infer and map to the appropriate picklist values using your semantic understanding. For Meeting_Type__c, analyze the context and select the most appropriate value from available options using your judgment to map natural language (lunch, office visit, zoom, etc.) to valid picklist values. For Meeting_Outcome__c, assess user sentiment and descriptions to select the best matching outcome by mapping phrases like "went well", "productive", "excellent", "needs more work" to the appropriate picklist value. For Meeting_Status__c, determine the appropriate status based on context (Completed for past meetings, Scheduled for future, Cancelled if not held). For Follow_Up_Required__c, set to true if the user mentions follow-up, next steps, or additional actions needed. Use your semantic understanding to interpret natural language. If the input does not clearly map to any available option, leave the field blank. Query availableFieldsJson to see all valid picklist options dynamically. Supports accountName and contactNameOrEmail for updating relationship fields. Supports bulk updates by Subject.'
         category='CRM Actions'
     )
     public static List<Response> updateMeeting(List<Request> requests) {
