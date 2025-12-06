@@ -5,6 +5,7 @@
     <inlineHelpText>Select the current status of this meeting. Use Scheduled for upcoming meetings, Completed for finished meetings, and Cancelled if the meeting did not occur.</inlineHelpText>
     <label>Meeting Status</label>
     <required>false</required>
+    <trackTrending>false</trackTrending>
     <type>Picklist</type>
     <valueSet>
         <valueSetDefinition>

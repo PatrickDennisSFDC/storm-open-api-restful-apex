@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Shipping_Method__c</fullName>
+    <label>Shipping_Method</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Overnight</fullName>
+                <default>false</default>
+                <label>Overnight</label>
+            </value>
+            <value>
+                <fullName>Ground</fullName>
+                <default>false</default>
+                <label>Ground</label>
+            </value>
+            <value>
+                <fullName>Cold Chain Courier</fullName>
+                <default>false</default>
+                <label>Cold Chain Courier</label>
+            </value>
+            <value>
+                <fullName>2 Day</fullName>
+                <default>false</default>
+                <label>2 Day</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

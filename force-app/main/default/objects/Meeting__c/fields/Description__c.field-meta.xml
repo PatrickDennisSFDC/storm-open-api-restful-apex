@@ -5,6 +5,7 @@
     <inlineHelpText>Enter detailed notes about what was discussed during the meeting, key points raised, questions asked, and any important observations or context.</inlineHelpText>
     <label>Description</label>
     <length>32000</length>
+    <trackTrending>false</trackTrending>
     <type>LongTextArea</type>
     <visibleLines>5</visibleLines>
 </CustomField>

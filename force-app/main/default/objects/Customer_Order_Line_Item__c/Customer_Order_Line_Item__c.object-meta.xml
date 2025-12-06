@@ -152,15 +152,15 @@
     <enableSearch>true</enableSearch>
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
-    <externalSharingModel>Private</externalSharingModel>
-    <label>Meeting</label>
+    <externalSharingModel>ControlledByParent</externalSharingModel>
+    <label>Customer Order Line Item</label>
     <nameField>
-        <displayFormat>MTG-{00000}</displayFormat>
-        <label>Meeting Number</label>
+        <displayFormat>COLI-{00000}</displayFormat>
+        <label>Customer Order Line Item Name</label>
         <type>AutoNumber</type>
     </nameField>
-    <pluralLabel>Meetings</pluralLabel>
+    <pluralLabel>Customer Order Line Items</pluralLabel>
     <searchLayouts></searchLayouts>
-    <sharingModel>ReadWrite</sharingModel>
+    <sharingModel>ControlledByParent</sharingModel>
     <visibility>Public</visibility>
 </CustomObject>

@@ -5,6 +5,7 @@
     <inlineHelpText>Rate the overall outcome of the meeting. Very Productive: Exceeded expectations. Productive: Met objectives. Neutral: Standard meeting. Needs Follow-up: Requires additional action. Unsuccessful: Did not meet objectives.</inlineHelpText>
     <label>Meeting Outcome</label>
     <required>false</required>
+    <trackTrending>false</trackTrending>
     <type>Picklist</type>
     <valueSet>
         <valueSetDefinition>

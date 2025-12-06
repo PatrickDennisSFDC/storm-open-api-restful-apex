@@ -4,5 +4,7 @@
     <description>Action items, follow-up tasks, or next steps agreed upon during the meeting</description>
     <inlineHelpText>Document any action items, follow-up tasks, or next steps that were agreed upon during the meeting. Include who is responsible and any deadlines discussed.</inlineHelpText>
     <label>Next Steps</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
     <type>TextArea</type>
 </CustomField>

@@ -5,6 +5,7 @@
     <inlineHelpText>Select Yes if you provided brochures, pamphlets, clinical studies, or other marketing materials during this meeting. Select No if no materials were provided.</inlineHelpText>
     <label>Marketing Materials Provided</label>
     <required>false</required>
+    <trackTrending>false</trackTrending>
     <type>Picklist</type>
     <valueSet>
         <valueSetDefinition>

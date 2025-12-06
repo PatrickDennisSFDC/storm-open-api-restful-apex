@@ -5,6 +5,7 @@
     <inlineHelpText>Select Yes if you left product samples (medications, medical devices, etc.) with the healthcare professional during this meeting. Select No if no samples were provided.</inlineHelpText>
     <label>Samples Dropped Off</label>
     <required>false</required>
+    <trackTrending>false</trackTrending>
     <type>Picklist</type>
     <valueSet>
         <valueSetDefinition>
