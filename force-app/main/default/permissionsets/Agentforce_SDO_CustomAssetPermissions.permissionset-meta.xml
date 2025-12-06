@@ -546,6 +546,10 @@
     </fieldPermissions>
     
     <tabSettings>
+        <tab>CustomerOrders__c</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
         <tab>Meeting__c</tab>
         <visibility>Visible</visibility>
     </tabSettings>
