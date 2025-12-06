@@ -1,4 +1,4 @@
-# Agentforce SDO Assets - AI Agent Context
+# Agentforce SDO Assets - Agent Rules & Vibe
 
 ## Project Purpose
 This repository is a store of Agentforce assets that make Agentforce better and help showcase its full potential. These assets are designed for use in Salesforce SDO (Salesforce Digital Office) environments and other Salesforce environments. The repository contains reusable components for building intelligent AI agents on Salesforce, with a focus on key use cases that continue to expand.
