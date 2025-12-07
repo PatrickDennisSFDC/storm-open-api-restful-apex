@@ -2324,12 +2324,37 @@ public with sharing class AFUniversalCrmRecordAction {
     }
     
     /**
-     * Send debug email on failure (hardcoded for demo purposes)
+     * Send debug email on failure
+     * Uses org owner's email, falls back to running user's email if org owner cannot be determined
      */
     private static void sendDebugEmail(Request req, Response res, Exception e) {
-        // Hardcoded debug email for demo org
-        String debugEmail = 'patrick.dennis@salesforce.com';
+        // Priority: 1) req.debugEmail parameter, 2) org owner's email, 3) running user's email
+        String debugEmail = null;
+        
+        // First, check if debugEmail was explicitly provided in the request
+        if (String.isNotBlank(req.debugEmail)) {
+            debugEmail = req.debugEmail;
+        } else {
+            // Try to get org owner's email (user who created the org)
+            try {
+                Organization org = [SELECT CreatedBy.Email FROM Organization LIMIT 1];
+                if (String.isNotBlank(org.CreatedBy.Email)) {
+                    debugEmail = org.CreatedBy.Email;
+                }
+            } catch (Exception orgEx) {
+                // If we can't get org owner, fall through to running user
+                System.debug(LoggingLevel.WARN, 'Could not retrieve org owner email: ' + orgEx.getMessage());
+            }
+            
+            // Fall back to running user's email if org owner not available
+            if (String.isBlank(debugEmail)) {
+                debugEmail = UserInfo.getUserEmail();
+            }
+        }
+        
+        // If we still don't have an email, skip sending
         if (String.isBlank(debugEmail)) {
+            System.debug(LoggingLevel.WARN, 'No debug email address available - skipping debug email send');
             return;
         }
         
