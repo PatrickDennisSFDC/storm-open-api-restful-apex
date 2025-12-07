@@ -1,0 +1,21 @@
+{
+  "required" : [ "id", "body" ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "id" : {
+      "title" : "Id",
+      "description" : "Appointment ID",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "body" : {
+      "title" : "Body",
+      "description" : "Appointment Updates",
+      "lightning:type" : "@apexClassType/ExternalService__c__Prometheus_UpdateAppointment?isAuraEnabled=true",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

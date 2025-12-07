@@ -33,14 +33,14 @@ public with sharing class AFAccountAction {
         
         @InvocableVariable(
             label='Search Term'
-            description='Text to search for in Account fields (Name, BillingCity, BillingState, etc.). Used for find operations. Example: "Acme" or "San Francisco".'
+            description='Text to search for in Account fields (Name, BillingCity, BillingState, etc.). Used for find operations. Example: "Acme" or "San Francisco". IMPORTANT: If the user wants to find an account but hasn\'t provided a search term, ask them for the account name or other identifying information BEFORE calling this action. Do not call find operation without a searchTerm or filtersJson.'
             required=false
         )
         public String searchTerm;
         
         @InvocableVariable(
             label='Filters JSON'
-            description='JSON string of exact-match filters for find operations. Can be single object {"fieldApiName":"Industry","value":"Technology"} or array [{"fieldApiName":"Industry","value":"Technology"}].'
+            description='JSON string of exact-match filters for find operations. Can be single object {"fieldApiName":"Industry","value":"Technology"} or array [{"fieldApiName":"Industry","value":"Technology"}]. IMPORTANT: If the user wants to find an account but hasn\'t provided specific filters, ask them for details like industry, city, state, or phone number BEFORE calling this action. Do not call find operation without a searchTerm or filtersJson.'
             required=false
         )
         public String filtersJson;
@@ -232,7 +232,7 @@ public with sharing class AFAccountAction {
      */
     @InvocableMethod(
         label='Account Action'
-        description='Performs CRUD operations on Account records. Operation can be explicitly specified (create, read, update, delete, find) or inferred from context. CREATE: Provide fieldDataJson. READ: Provide recordId. UPDATE: Provide recordId + fieldDataJson. DELETE: Provide recordId + confirm=true (first call with confirm=false for confirmation). FIND: Provide searchTerm and/or filtersJson. The agent should intelligently infer the operation from user intent, but can explicitly specify if needed. Supports bulk operations for create/update by providing JSON array in fieldDataJson.'
+        description='Performs CRUD operations on Account records. Operation can be explicitly specified (create, read, update, delete, find) or inferred from context. CREATE: Provide fieldDataJson. READ: Provide recordId. UPDATE: Provide recordId + fieldDataJson. DELETE: Provide recordId + confirm=true (first call with confirm=false for confirmation). FIND: IMPORTANT - Before calling find operation, ensure you have search criteria. If the user asks to "find" or "look up" an account without providing specific details (account name, industry, city, state, phone, etc.), you MUST ask the user for these details FIRST before calling this action. Only call this action with find operation when you have at least a searchTerm (account name or partial name) or filtersJson (specific field filters). If the user says "look up an account" or "find an account" without details, respond conversationally: "I\'d be happy to help you find an account. Could you provide some details like the account name, industry, city, state, or phone number?" Do NOT call the action with empty search criteria. The agent should intelligently infer the operation from user intent, but can explicitly specify if needed. Supports bulk operations for create/update by providing JSON array in fieldDataJson.'
         category='CRM Actions'
     )
     public static List<Response> accountAction(List<Request> requests) {

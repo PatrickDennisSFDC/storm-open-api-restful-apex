@@ -268,6 +268,135 @@ Parse [field type] from context, infer [other field] from sentiment, detect [fla
 Query availableFieldsJson to see valid picklist options, then use your best judgment to map.
 ```
 
+## 🔧 Agent Metadata Deployment & Schema Configuration
+
+### Critical Discovery: Schema Files Are Required
+
+When deploying actions via API/metadata, we learned that **defining actions in planner bundle XML is not enough**. The planner service needs schema files to understand action inputs and outputs.
+
+**Directory Structure:**
+```
+genAiPlannerBundles/{AgentName}/localActions/{TopicName}/{ActionName}/
+├── input/
+│   └── schema.json
+└── output/
+    └── schema.json
+```
+
+**Why Schema Files Matter:**
+- Make inputs/outputs visible in the UI
+- Enable planner service to recognize and use actions
+- Without them, actions are "invisible" - planner service can't see them
+- Schema files define the structure that the planner service uses to understand action contracts
+
+### Apex Descriptions Pull Through Automatically
+
+**Key Learning:** The `@InvocableMethod` description in Apex classes automatically becomes the action description in the planner bundle. This is why we update Apex classes, not just planner bundle XML.
+
+**How It Works:**
+- `@InvocableMethod` description → Action description in planner bundle
+- `@InvocableVariable` labels → Schema property titles
+- `@InvocableVariable` descriptions → Schema property descriptions
+- Changes to Apex descriptions require re-deployment of planner bundle to pick up changes
+
+**Implication:** When you want to guide agent behavior, update the Apex class descriptions. The metadata system will automatically pull these through to the planner bundle.
+
+### Schema Configuration Best Practices
+
+**copilotAction Flags - Critical for Conversational Experience:**
+
+- **`copilotAction:isUserInput`**: 
+  - Set to `false` for most fields to keep conversational (default)
+  - Only set `true` if you want the UI to show a form field (rarely needed)
+  - JSON fields (fieldDataJson, filtersJson) should always be `false` - agent constructs these from natural language
+  - Internal parameters (operation, confirm, searchLimit) should be `false`
+  - Natural language fields (searchTerm, accountName) can be `false` - agent extracts from conversation
+
+- **`copilotAction:isDisplayable`**: 
+  - Set to `true` for outputs that should be shown to user
+  - Set to `false` for internal/metadata outputs
+
+- **`copilotAction:isUsedByPlanner`**: 
+  - Set to `true` for outputs the planner needs to understand results
+  - At least one output property must have this as `true` or planner returns random responses
+
+**Key Principle:** Keep schema flags minimal. Most inputs should have `copilotAction:isUserInput: false` to maintain a conversational experience without showing forms.
+
+### API Version Requirements
+
+**Critical:** GenAiPlannerBundle metadata requires API version 65.0 or later.
+
+**What to Do:**
+- Update `sfdx-project.json` `sourceApiVersion` to "65.0" before retrieving/deploying planner bundles
+- Lower API versions will fail with `UNSUPPORTED_API_VERSION` error
+- This was discovered when trying to retrieve planner bundle metadata
+
+### Deployment Process
+
+**Steps for Deploying Actions with Schema Files:**
+
+1. **Create Apex Class** with comprehensive `@InvocableMethod` and `@InvocableVariable` descriptions
+2. **Create Schema Files**:
+   - `input/schema.json` - Maps Request class variables to schema format
+   - `output/schema.json` - Maps Response class variables to schema format
+3. **Set Schema Flags Appropriately**:
+   - Most inputs: `copilotAction:isUserInput: false`
+   - Outputs: `copilotAction:isDisplayable: true`, `copilotAction:isUsedByPlanner: true`
+4. **Deploy Together**:
+   - Deploy planner bundle XML and schema files together
+   - Schema files are part of the GenAiPlannerBundle metadata type
+   - Directory structure must match exactly: `localActions/{TopicName}/{ActionName}/input|output/`
+5. **Verify in UI**:
+   - Check that inputs/outputs are visible in the action configuration
+   - Test that planner service recognizes the action
+   - Verify agent can use the action conversationally
+
+### Common Pitfalls in Schema Configuration
+
+**Don't:**
+- ❌ Set `copilotAction:isUserInput: true` on JSON fields (users can't provide JSON)
+- ❌ Call find operations without search criteria (agent should ask first)
+- ❌ Deploy planner bundle without schema files (actions won't be recognized)
+- ❌ Use API version < 65.0 for GenAiPlannerBundle (will fail)
+- ❌ Overuse `copilotAction:isUserInput: true` (breaks conversational experience)
+
+**Do:**
+- ✅ Guide agents to ask for clarification in Apex descriptions
+- ✅ Keep schema flags minimal (most should be false)
+- ✅ Test that actions are visible and usable after deployment
+- ✅ Use "IMPORTANT" or "BEFORE calling" in descriptions to emphasize critical guidance
+- ✅ Provide conversational templates in descriptions
+
+### Writing Effective Agent Guidance in Apex
+
+**Best Practices:**
+
+1. **Be Explicit About When to Ask for Clarification:**
+   ```
+   FIND: IMPORTANT - Before calling find operation, ensure you have search criteria.
+   If the user asks to "find" or "look up" a [object] without providing specific details,
+   you MUST ask the user for these details FIRST before calling this action.
+   ```
+
+2. **Provide Conversational Templates:**
+   ```
+   If the user says "look up a [object]" without details, respond conversationally:
+   "I'd be happy to help you find a [object]. Could you provide some details like..."
+   ```
+
+3. **Use Emphasis Words:**
+   - "IMPORTANT" - For critical guidance
+   - "BEFORE calling" - For prerequisites
+   - "MUST" - For required behavior
+   - "Do NOT" - For prohibited actions
+
+4. **Object-Specific Guidance:**
+   - Tailor examples to each object's relevant fields
+   - Account: name, industry, city, state, phone
+   - Contact: name, email, account name, phone
+   - Case: subject, case number, account name, status
+   - etc.
+
 ## 🚨 Common Pitfalls to Avoid
 
 ### ❌ Don't: Hardcode Phrase Mappings

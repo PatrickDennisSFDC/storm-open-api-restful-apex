@@ -1,0 +1,63 @@
+{
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "operation" : {
+      "title" : "Operation",
+      "description" : "Explicit operation to perform: \"create\", \"read\", \"update\", \"delete\", or \"find\". If not specified, operation will be inferred from context: has fieldDataJson + recordId = update, has fieldDataJson only = create, has recordId only = read, has searchTerm/filtersJson = find, has recordId only (no data/search) = delete.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "fieldDataJson" : {
+      "title" : "Field Data JSON",
+      "description" : "JSON string containing Account field data. For create: {\"Name\":\"Acme Corp\",\"Industry\":\"Technology\"}. For update: {\"Industry\":\"Technology\",\"BillingCity\":\"San Francisco\"}. For bulk operations: [{\"Name\":\"Acme\"},{\"Name\":\"Globex\"}]. Required for create/update operations. The agent should construct this JSON from natural language user input (e.g., \"create an account called Acme Corp in the Technology industry\" becomes {\"Name\":\"Acme Corp\",\"Industry\":\"Technology\"}).",
+      "lightning:type" : "lightning__multilineTextType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "recordId" : {
+      "title" : "Record ID",
+      "description" : "The Salesforce record ID (15 or 18 character) of the Account. Required for read/update/delete operations. Format: 18-character ID like \"001xx000003DGbYAAW\". For update, can be omitted if Name is provided in fieldDataJson for automatic resolution. The agent should resolve this from account name when possible rather than asking the user for an ID.",
+      "lightning:type" : "lightning__recordIdType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "searchTerm" : {
+      "title" : "Search Term",
+      "description" : "Text to search for in Account fields (Name, BillingCity, BillingState, etc.). Used for find operations. Extract this from natural language user input (e.g., \"find accounts with Acme\" → searchTerm=\"Acme\").",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "filtersJson" : {
+      "title" : "Filters JSON",
+      "description" : "JSON string of exact-match filters for find operations. Can be single object {\"fieldApiName\":\"Industry\",\"value\":\"Technology\"} or array [{\"fieldApiName\":\"Industry\",\"value\":\"Technology\"}]. The agent should construct this JSON from natural language user input (e.g., \"find accounts in the Technology industry\" becomes {\"fieldApiName\":\"Industry\",\"value\":\"Technology\"}).",
+      "lightning:type" : "lightning__multilineTextType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "searchLimit" : {
+      "title" : "Search Limit",
+      "description" : "Maximum number of records to return for find operations (default: 5, max: 20). Internal parameter, not user-facing.",
+      "lightning:type" : "lightning__integerType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "accountName" : {
+      "title" : "Account Name",
+      "description" : "Account name to resolve to AccountId for related records (not typically used for Account operations, but available for consistency). Extract this from natural language user input.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "confirm" : {
+      "title" : "Confirm",
+      "description" : "For create/update: Set to false to preview only without committing. Default (true): Commits immediately. For delete: Set to true to actually delete. Default (false): Returns confirmation message first. The agent should first call delete with confirm=false, ask the user, then call again with confirm=true if confirmed. Internal flag, not user-facing.",
+      "lightning:type" : "lightning__booleanType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}
+

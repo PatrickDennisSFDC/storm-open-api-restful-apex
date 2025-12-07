@@ -1,0 +1,62 @@
+{
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "patientName" : {
+      "title" : "Patient Name",
+      "description" : "Filter by patient name (partial match, case-insensitive). Use this to look up referrals by patient name.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : true
+    },
+    "referralType" : {
+      "title" : "Referral Type",
+      "description" : "Filter by referral type",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "currentStatus" : {
+      "title" : "Current Status",
+      "description" : "Filter by current referral status",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "receivingClinicSpecialty" : {
+      "title" : "Receiving Clinic Specialty",
+      "description" : "Filter by receiving clinic specialty",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "referringProvider" : {
+      "title" : "Referring Provider",
+      "description" : "Filter by referring provider name (partial match)",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "routingTarget" : {
+      "title" : "Routing Target",
+      "description" : "Filter by routing target",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "startDate" : {
+      "title" : "Start Date",
+      "description" : "Filter by referral date from (ISO 8601)",
+      "lightning:type" : "lightning__dateTimeStringType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "endDate" : {
+      "title" : "End Date",
+      "description" : "Filter by referral date to (ISO 8601)",
+      "lightning:type" : "lightning__dateTimeStringType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

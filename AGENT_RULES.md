@@ -143,6 +143,93 @@ Custom exception for multiple matching records. Contains:
 7. Add to `AgentCourseSDOCustomAssetPermissions` permission set
 8. Update README.md
 
+## Schema Configuration Best Practices
+
+### Schema File Structure
+
+When deploying actions via API/metadata, schema files are **required** for the planner service to recognize and use actions:
+
+```
+genAiPlannerBundles/{AgentName}/localActions/{TopicName}/{ActionName}/
+├── input/
+│   └── schema.json
+└── output/
+    └── schema.json
+```
+
+**Key Points:**
+- Schema files make inputs/outputs visible in UI
+- Without schema files, actions are "invisible" to planner service
+- Directory structure must match exactly
+- Schema files are part of GenAiPlannerBundle metadata type
+
+### copilotAction Flags
+
+**`copilotAction:isUserInput`**:
+- Set to `false` for conversational experience (default for most fields)
+- Only set `true` if you want UI to show a form field (rarely needed)
+- JSON fields (fieldDataJson, filtersJson) should always be `false` - agent constructs these
+- Internal parameters (operation, confirm, searchLimit) should be `false`
+- Natural language fields (searchTerm, accountName) can be `false` - agent extracts from conversation
+
+**`copilotAction:isDisplayable`**:
+- Set to `true` for outputs that should be shown to user
+- Set to `false` for internal/metadata outputs
+
+**`copilotAction:isUsedByPlanner`**:
+- Set to `true` for outputs the planner needs to understand results
+- At least one output property must have this as `true` or planner returns random responses
+
+**Principle:** Keep schema flags minimal. Most inputs should have `copilotAction:isUserInput: false` to maintain conversational experience.
+
+### Writing Agent Guidance in Apex
+
+**Key Rule:** Apex `@InvocableMethod` and `@InvocableVariable` descriptions automatically pull through to planner bundle metadata. This is why we update Apex classes, not just planner bundle XML.
+
+**Best Practices:**
+
+1. **Be Explicit About When to Ask for Clarification:**
+   - Use "IMPORTANT" or "BEFORE calling" to emphasize critical guidance
+   - Provide conversational templates
+   - Use "MUST" for required behavior, "Do NOT" for prohibited actions
+
+2. **Object-Specific Examples:**
+   - Tailor guidance to each object's relevant fields
+   - Provide concrete examples of what to ask for
+
+3. **Find Operation Guidance:**
+   - Always instruct agent to ask for search criteria if user's request is vague
+   - Provide example conversational response
+   - Explicitly state: "Do NOT call the action with empty search criteria"
+
+### Deployment Checklist
+
+When deploying a new action with schema files:
+
+- [ ] Apex class has comprehensive `@InvocableMethod` description
+- [ ] All `@InvocableVariable` have labels and descriptions
+- [ ] Schema files created with proper directory structure
+- [ ] Schema flags set appropriately (mostly `false` for inputs)
+- [ ] API version is 65.0+ in `sfdx-project.json`
+- [ ] Deploy planner bundle and schema files together
+- [ ] Verify in UI that inputs/outputs are visible
+- [ ] Test that agent can use the action conversationally
+- [ ] Verify planner service recognizes the action
+
+### Common Schema Configuration Mistakes
+
+**Don't:**
+- Set `copilotAction:isUserInput: true` on JSON fields
+- Overuse `copilotAction:isUserInput: true` (breaks conversational experience)
+- Deploy planner bundle without schema files
+- Use API version < 65.0 for GenAiPlannerBundle
+
+**Do:**
+- Keep most inputs as `copilotAction:isUserInput: false`
+- Guide agents in Apex descriptions, not just schema
+- Test visibility and usability after deployment
+- Use emphasis words ("IMPORTANT", "BEFORE calling") in descriptions
+
 ## Important Notes
 
 - All classes use `with sharing` for security

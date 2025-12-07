@@ -1,0 +1,41 @@
+{
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "accountName" : {
+      "title" : "Account Name",
+      "description" : "Filter orders by Account name. Use this when user asks \"Find orders for Acme Corp\". System will resolve the Account and filter to orders linked to that Account__c.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "contactNameOrEmail" : {
+      "title" : "Contact Name or Email",
+      "description" : "Filter orders by Contact name or email. Use this when user asks \"Find orders for John Smith\". System will resolve the Contact and filter to orders linked to that Contact__c.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "filtersJson" : {
+      "title" : "Filters JSON",
+      "description" : "JSON string of exact-match filters. Can be single object {\"fieldApiName\":\"Status__c\",\"value\":\"Draft\"} or array [{\"fieldApiName\":\"Status__c\",\"value\":\"Draft\"},{\"fieldApiName\":\"Priority__c\",\"value\":\"High\"}]. Common filter fields: Status__c, Priority__c, Order_Type__c, Shipping_Method__c, Temperature_Controlled__c.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "searchLimit" : {
+      "title" : "Search Limit",
+      "description" : "Maximum number of records to return (default: 5, max: 20). If more records match, the response will indicate how many total matches were found.",
+      "lightning:type" : "lightning__integerType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "searchTerm" : {
+      "title" : "Search Term",
+      "description" : "Text to search for in Customer Order fields (Name, Order_Number__c, PO_Number__c, Status__c). The search will find orders where any of these fields contain the search term. Example: \"Q4\" or \"12345\" or \"Acme\".",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

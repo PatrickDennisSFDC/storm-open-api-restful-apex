@@ -28,13 +28,13 @@ public with sharing class AFCustomerOrderAction {
         
         @InvocableVariable(
             label='Search Term'
-            description='Text to search for in Customer Order fields (Name, Order_Number__c, PO_Number__c, etc.). Used for find operations.'
+            description='Text to search for in Customer Order fields (Name, Order_Number__c, PO_Number__c, etc.). Used for find operations. IMPORTANT: If the user wants to find a customer order but hasn\'t provided a search term, ask them for the order name, order number, or other identifying information BEFORE calling this action. Do not call find operation without a searchTerm or filtersJson.'
         )
         public String searchTerm;
         
         @InvocableVariable(
             label='Filters JSON'
-            description='JSON string of exact-match filters for find operations.'
+            description='JSON string of exact-match filters for find operations. IMPORTANT: If the user wants to find a customer order but hasn\'t provided specific filters, ask them for details like order number, account name, or status BEFORE calling this action. Do not call find operation without a searchTerm or filtersJson.'
         )
         public String filtersJson;
         
@@ -254,7 +254,7 @@ public with sharing class AFCustomerOrderAction {
     
     @InvocableMethod(
         label='Customer Order Action'
-        description='Performs CRUD operations on CustomerOrders__c records. Operation can be explicitly specified (create, read, update, delete, find) or inferred from context. CREATE: Provide fieldDataJson. Optionally provide lineItemsJson to create line items with the order. READ: Provide recordId. Automatically includes all line items. UPDATE: Provide recordId + fieldDataJson. Optionally provide addLineItemsJson, updateLineItemsJson, or deleteLineItemIds to manage line items. DELETE: Provide recordId + confirm=true. FIND: Provide searchTerm and/or filtersJson. Supports accountName and contactNameOrEmail parameters to link Order to Account/Contact. Supports bulk operations for create/update.'
+        description='Performs CRUD operations on CustomerOrders__c records. Operation can be explicitly specified (create, read, update, delete, find) or inferred from context. CREATE: Provide fieldDataJson. Optionally provide lineItemsJson to create line items with the order. READ: Provide recordId. Automatically includes all line items. UPDATE: Provide recordId + fieldDataJson. Optionally provide addLineItemsJson, updateLineItemsJson, or deleteLineItemIds to manage line items. DELETE: Provide recordId + confirm=true. FIND: IMPORTANT - Before calling find operation, ensure you have search criteria. If the user asks to "find" or "look up" a customer order without providing specific details (order name, order number, account name, status, etc.), you MUST ask the user for these details FIRST before calling this action. Only call this action with find operation when you have at least a searchTerm (order name or order number) or filtersJson (specific field filters). If the user says "look up a customer order" or "find a customer order" without details, respond conversationally: "I\'d be happy to help you find a customer order. Could you provide some details like the order name, order number, account name, or status?" Do NOT call the action with empty search criteria. Supports accountName and contactNameOrEmail parameters to link Order to Account/Contact. Supports bulk operations for create/update.'
         category='CRM Actions'
     )
     public static List<Response> customerOrderAction(List<Request> requests) {
