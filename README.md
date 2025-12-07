@@ -15,7 +15,9 @@ This repository serves as a hub for high-quality Agentforce technology assets. W
 
 ## 📦 What's Included
 
-### 🤖 Consolidated CRUD Action Classes (7 Total)
+**Repository Focus**: This repository contains only reusable Agentforce assets - Apex classes, custom objects, permission sets, and documentation. Agent-specific configurations (planner bundles, bot metadata, GenAI plugins) are not included as they are org-specific and should be created per deployment.
+
+### 🤖 Consolidated CRUD Action Classes (8 Total)
 
 Unified action classes that support all CRUD operations (Create, Read, Update, Delete, Find) for core CRM objects:
 
@@ -26,6 +28,9 @@ Unified action classes that support all CRUD operations (Create, Read, Update, D
 - **AFTaskAction** - Activity and to-do management
 - **AFMeetingAction** - Custom Meeting object for field sales (pharmaceutical/medical)
 - **AFCustomerOrderAction** - Order management with nested line items
+- **AFUniversalAnalyticsAction** - Dynamic aggregate queries for analytics (SUM, COUNT, AVG, MIN, MAX, GROUP BY)
+
+**Note**: All action labels in Agentforce UI include the "Agentforce" prefix (e.g., "Agentforce Account Action", "Agentforce Task Action") for better branding and discoverability.
 
 Each consolidated action class provides:
 - ✅ **Create** - Single or bulk record creation with field enrichment
@@ -49,11 +54,12 @@ The backbone of all CRUD operations. This utility class provides:
 - Line item helper methods for Customer Orders
 
 #### AFUniversalAnalyticsAction
-Dynamic aggregate query engine for analytics use cases:
+Dynamic aggregate query engine for analytics use cases. Available as "Agentforce Analytics Query" in Agentforce UI:
 - SUM, COUNT, AVG, MIN, MAX operations
 - Dynamic GROUP BY support
 - Date range filtering
 - Multi-object querying
+- Answers questions like "How much pipeline do I have?", "How many accounts by industry?"
 
 #### AmbiguousRelationshipException
 Custom exception class for handling scenarios where AI agents encounter multiple matching records (e.g., multiple contacts named "John Smith"). Returns candidate list for user clarification.
@@ -69,9 +75,8 @@ These custom objects come with sample data population scripts to accelerate demo
 
 ### 🔐 Security & Permissions
 
-- **Agentforce SDO Custom Asset Permissions** - Grants full access to all Apex classes, custom objects, and fields in the repository
-- **System Admin Profile** - Configured with explicit field permissions
-- **Page Layouts** - Updated with all custom fields
+- **Agentforce SDO Custom Asset Permissions** (`AgentCourseSDOCustomAssetPermissions`) - Grants full access to all Apex classes, custom objects, and fields in the repository. **This permission set is critical** - assign it to users who will use Agentforce actions.
+- **Page Layouts** - Updated with all custom fields for Meeting__c and CustomerOrders__c objects
 
 ### 📊 Sample Data Scripts
 
@@ -143,7 +148,17 @@ sf org assign permset --name AgentCourseSDOCustomAssetPermissions --target-org m
 5. **Configure Agentforce:**
 - Navigate to Setup → Agentforce Agents
 - Create or edit your agent
+- Go to Actions tab (or Topics → General CRM Updates)
 - Add the deployed actions to your agent's action library
+- Search for actions with "Agentforce" prefix:
+  - "Agentforce Account Action"
+  - "Agentforce Contact Action"
+  - "Agentforce Case Action"
+  - "Agentforce Opportunity Action"
+  - "Agentforce Task Action"
+  - "Agentforce Meeting Action"
+  - "Agentforce Customer Order Action"
+  - "Agentforce Analytics Query"
 
 ### Optional: Populate Sample Data
 ```bash
@@ -190,12 +205,13 @@ System:
 | Object | Create | Read | Update | Delete | Find | Special Features |
 |--------|--------|------|--------|--------|------|------------------|
 | Account | ✅ | ✅ | ✅ | ✅ | ✅ | Parent account resolution |
-| Contact | ✅ | ✅ | ✅ | ✅ | ✅ | Email/name search |
+| Contact | ✅ | ✅ | ✅ | ✅ | ✅ | Email/name search, account-scoped resolution |
 | Opportunity | ✅ | ✅ | ✅ | ✅ | ✅ | Stage tracking |
 | Case | ✅ | ✅ | ✅ | ✅ | ✅ | Priority handling |
 | Task | ✅ | ✅ | ✅ | ✅ | ✅ | WhoId/WhatId support |
-| Meeting__c | ✅ | ✅ | ✅ | ✅ | ✅ | Pharma field sales |
-| CustomerOrders__c | ✅ | ✅ | ✅ | ✅ | ✅ | Nested line items |
+| Meeting__c | ✅ | ✅ | ✅ | ✅ | ✅ | Pharma field sales, semantic picklist inference |
+| CustomerOrders__c | ✅ | ✅ | ✅ | ✅ | ✅ | Nested line items, bulk line item operations |
+| Analytics | ✅ | ✅ | N/A | N/A | ✅ | Aggregate queries (SUM, COUNT, AVG, MIN, MAX, GROUP BY) |
 
 ## 🤝 Contributing
 
@@ -222,10 +238,11 @@ Complete account, contact, opportunity management with task/activity tracking, c
 
 ## 🔧 Technical Details
 
-- **API Version:** 62.0
+- **API Version:** 65.0
 - **Language:** Apex
-- **Pattern:** Invocable Actions
-- **Security:** with sharing enforced
+- **Pattern:** Invocable Actions with `@InvocableMethod` annotation
+- **Security:** `with sharing` enforced for all action classes
+- **Error Handling:** Debug emails automatically sent to org owner (falls back to running user)
 - **Test Coverage:** (Coming soon)
 
 ## 📄 License
@@ -247,3 +264,11 @@ For questions, issues, or feature requests, please contact Patrick Dennis or ope
 **Built with ❤️ for the Agentforce community**
 
 *Last Updated: December 2024*
+
+## 📋 Recent Updates
+
+- **December 2024**: Added "Agentforce" prefix to all action labels for better branding and discoverability
+- **December 2024**: Updated debug email to use org owner's email (with fallback to running user) instead of hardcoded address
+- **December 2024**: Repository cleanup - removed org-specific agent configurations (planner bundles, bot metadata, GenAI plugins), keeping only reusable assets
+- **December 2024**: Updated to API version 65.0
+- **December 2024**: Added AFUniversalAnalyticsAction for dynamic aggregate queries
